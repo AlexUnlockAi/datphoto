@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin-dal";
 import { Sidebar } from "@/components/app/sidebar";
 import { MobileNav } from "@/components/app/mobile-nav";
+import { Topbar } from "@/components/app/topbar";
 
 export default async function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default async function DashboardLayout({
             Dat<span className="text-primary">Photography</span>
           </span>
         </header>
+        <Topbar />
         <main className="flex-1 p-6 lg:p-10">{children}</main>
       </div>
     </div>

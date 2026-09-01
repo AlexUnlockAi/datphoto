@@ -7,6 +7,7 @@ import {
   MapPin,
   FileText,
   Receipt,
+  Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,19 +21,20 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [invoicesRes, quotesRes, shootsRes, clientsRes] = await Promise.all([
+  const [invoicesRes, quotesRes, shootsRes, clientsRes, quotesPendingRes] = await Promise.all([
     supabase.from("invoices").select("*").order("created_at", { ascending: false }),
     supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(10),
     supabase.from("shoots").select("*").order("shoot_date", { ascending: true }),
     supabase.from("clients").select("id, name"),
+    supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "sent"),
   ]);
 
   const invoices = (invoicesRes.data ?? []) as Invoice[];
   const quotes = (quotesRes.data ?? []) as Quote[];
   const shoots = (shootsRes.data ?? []) as Shoot[];
-  const clients = new Map(
-    ((clientsRes.data ?? []) as Pick<Client, "id" | "name">[]).map((c) => [c.id, c.name])
-  );
+  const clientRows = (clientsRes.data ?? []) as Pick<Client, "id" | "name">[];
+  const clients = new Map(clientRows.map((c) => [c.id, c.name]));
+  const quotesPendingCount = quotesPendingRes.count ?? 0;
 
   const paid = invoices.filter((i) => i.status === "paid");
   const unpaid = invoices.filter((i) => i.status === "unpaid");
@@ -92,14 +94,20 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Revenue, outstanding balance, and what&rsquo;s coming up.
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="hud-label mb-1">Overview</p>
+          <h1 className="font-heading text-2xl">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Revenue, outstanding balance, and what&rsquo;s coming up.
+          </p>
+        </div>
+        <p className="hidden font-mono text-xs text-muted-foreground sm:block">
+          {invoices.length} invoices · {quotes.length} quotes · {shoots.length} shoots
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <StatTile
           icon={DollarSign}
           label="Total revenue"
@@ -121,12 +129,23 @@ export default async function DashboardPage() {
           label="Upcoming shoots"
           value={String(upcomingShoots.length)}
         />
+        <StatTile
+          icon={FileText}
+          label="Quotes pending"
+          value={String(quotesPendingCount)}
+        />
+        <StatTile
+          icon={Users}
+          label="Active clients"
+          value={String(clientRows.length)}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         <Card size="sm">
           <CardHeader>
-            <CardTitle>Revenue — last 6 months</CardTitle>
+            <p className="hud-label">Revenue</p>
+            <CardTitle>Last 6 months</CardTitle>
           </CardHeader>
           <CardContent>
             <RevenueChart data={revenueByMonth} />
@@ -135,7 +154,10 @@ export default async function DashboardPage() {
 
         <Card size="sm">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Upcoming shoots</CardTitle>
+            <div>
+              <p className="hud-label">Schedule</p>
+              <CardTitle>Upcoming shoots</CardTitle>
+            </div>
             <Link href="/shoots" className="text-xs text-primary hover:underline">
               View all
             </Link>
@@ -176,6 +198,7 @@ export default async function DashboardPage() {
 
       <Card size="sm">
         <CardHeader>
+          <p className="hud-label">Activity log</p>
           <CardTitle>Recent activity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1">
@@ -228,15 +251,15 @@ function StatTile({
   tone?: string;
 }) {
   return (
-    <Card size="sm">
-      <CardContent className="flex items-center gap-3 py-1">
-        <div className="flex size-9 shrink-0 items-center justify-center bg-primary/10 text-primary">
-          <Icon className="size-4" />
+    <Card size="sm" className="hud-corners border-t-2 border-t-primary/40">
+      <CardContent className="space-y-2 py-1">
+        <div className="flex items-center justify-between">
+          <Icon className="size-3.5 text-primary/70" />
+          <p className="hud-label !text-muted-foreground/70">{label}</p>
         </div>
-        <div className="min-w-0">
-          <p className="truncate text-xs text-muted-foreground">{label}</p>
-          <p className={`font-heading text-lg ${tone ?? ""}`}>{value}</p>
-        </div>
+        <p className={`truncate font-mono text-xl font-medium tabular-nums ${tone ?? ""}`}>
+          {value}
+        </p>
       </CardContent>
     </Card>
   );
