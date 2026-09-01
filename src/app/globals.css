@@ -89,6 +89,43 @@
     0 0 20px -4px color-mix(in oklch, var(--primary) 60%, transparent);
 }
 
+/* Light mode — same brand (warm cream, dark gold, near-black ink), inverted.
+   Opt-in via a `.light` class on <html>; the dark palette above stays the
+   default so the product keeps its established look until switched. */
+:root.light {
+  --background: #f7f4ee;
+  --foreground: #17130f;
+  --card: #ffffff;
+  --card-foreground: #17130f;
+  --popover: #ffffff;
+  --popover-foreground: #17130f;
+  --primary: #8a6a26;
+  --primary-foreground: #fffdf7;
+  --secondary: #efe9dc;
+  --secondary-foreground: #17130f;
+  --muted: #efe9dc;
+  --muted-foreground: #6b6357;
+  --accent: #8a6a26;
+  --accent-foreground: #fffdf7;
+  --destructive: #c23b40;
+  --border: #e1dbcc;
+  --input: #efe9dc;
+  --ring: #8a6a26;
+  --chart-1: #8a6a26;
+  --chart-2: #007a70;
+  --chart-3: #104e64;
+  --chart-4: #b8860b;
+  --chart-5: #c17800;
+  --sidebar: #f1ebdf;
+  --sidebar-foreground: #17130f;
+  --sidebar-primary: #8a6a26;
+  --sidebar-primary-foreground: #fffdf7;
+  --sidebar-accent: #e6dfce;
+  --sidebar-accent-foreground: #17130f;
+  --sidebar-border: #e1dbcc;
+  --sidebar-ring: #8a6a26;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

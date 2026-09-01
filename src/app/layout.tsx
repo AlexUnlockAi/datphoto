@@ -37,6 +37,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${montserrat.variable} ${cormorant.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
+        <script
+          // Applied before paint so switching to light mode doesn't flash
+          // the default dark theme on load.
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("dpcc-theme")==="light"){document.documentElement.classList.add("light")}}catch(e){}`,
+          }}
+        />
         {children}
         <Toaster />
       </body>

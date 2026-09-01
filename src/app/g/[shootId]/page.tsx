@@ -53,9 +53,8 @@ export default async function PublicGalleryPage({
     <div className="min-h-screen bg-background px-6 py-12 text-foreground">
       <div className="mx-auto max-w-6xl">
         <div className="border-b border-border pb-6">
-          <span className="font-heading text-2xl tracking-wider">
-            Dat<span className="text-primary">Photography</span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="DatPhotography" className="h-14 w-auto" />
           <h1 className="mt-3 font-heading text-xl">{shoot.school_name}</h1>
           <p className="text-sm text-muted-foreground">
             Browse the gallery below. Purchased photos unlock full-resolution download —

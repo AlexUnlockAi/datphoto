@@ -20,9 +20,8 @@ export function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
       <div className="border-b border-sidebar-border px-6 py-5">
-        <span className="font-heading text-xl tracking-wider text-sidebar-foreground">
-          Dat<span className="text-sidebar-primary">Photography</span>
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="DatPhotography" className="h-16 w-auto" />
         <div className="mt-1.5 flex items-center gap-1.5">
           <span className="relative flex size-1.5">
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/60" />

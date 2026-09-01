@@ -49,9 +49,8 @@ export default async function PublicInvoicePage({
         )}
         <div className="flex items-start justify-between border-b border-border pb-8">
           <div>
-            <span className="font-heading text-2xl tracking-wider">
-              Dat<span className="text-primary">Photography</span>
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="DatPhotography" className="h-14 w-auto" />
             <p className="mt-2 text-sm text-muted-foreground">{BUSINESS.email}</p>
             <p className="text-sm text-muted-foreground">{BUSINESS.phone}</p>
           </div>

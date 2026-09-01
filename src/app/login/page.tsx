@@ -5,9 +5,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center text-center">
-          <span className="font-heading text-3xl tracking-wider text-foreground">
-            Dat<span className="text-primary">Photography</span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="DatPhotography" className="h-20 w-auto" />
           <p className="mt-2 text-xs tracking-[0.2em] text-muted-foreground uppercase">
             Command Center
           </p>

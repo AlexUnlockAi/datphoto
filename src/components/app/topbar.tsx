@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Camera, FileText, Receipt, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/app/theme-toggle";
 
 const QUICK_ACTIONS = [
   { href: "/shoots/new", label: "New Shoot", icon: Camera },
@@ -58,6 +59,7 @@ export function Topbar() {
             {action.label}
           </Button>
         ))}
+        <ThemeToggle />
       </div>
     </header>
   );
