@@ -40,11 +40,14 @@ export default async function PublicGalleryPage({
   const students = new Map(
     ((studentsRes.data ?? []) as Student[]).map((s) => [s.id, s])
   );
+  const paidInvoices = (paidInvoicesRes.data ?? []) as Pick<Invoice, "student_id">[];
   const paidStudentIds = new Set(
-    ((paidInvoicesRes.data ?? []) as Pick<Invoice, "student_id">[])
-      .map((i) => i.student_id)
-      .filter((id): id is string => !!id)
+    paidInvoices.map((i) => i.student_id).filter((id): id is string => !!id)
   );
+  // Shoots with no roster (family/individual sessions — most shoots) have no
+  // student to gate photos on, so any paid invoice for the shoot unlocks
+  // every unassigned photo in it.
+  const shootPaidWithNoRoster = students.size === 0 && paidInvoices.length > 0;
 
   return (
     <div className="min-h-screen bg-background px-6 py-12 text-foreground">
@@ -68,7 +71,9 @@ export default async function PublicGalleryPage({
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {photos.map((photo) => {
               const student = photo.student_id ? students.get(photo.student_id) : null;
-              const unlocked = !!photo.student_id && paidStudentIds.has(photo.student_id);
+              const unlocked = photo.student_id
+                ? paidStudentIds.has(photo.student_id)
+                : shootPaidWithNoRoster;
               return (
                 <div key={photo.id} className="space-y-2">
                   <div className="relative aspect-square overflow-hidden bg-muted">

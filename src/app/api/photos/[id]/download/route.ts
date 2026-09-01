@@ -22,20 +22,15 @@ export async function GET(
     return NextResponse.json({ error: "Photo not found" }, { status: 404 });
   }
 
-  if (!photo.student_id) {
-    return NextResponse.json(
-      { error: "This photo isn't assigned to a student yet" },
-      { status: 403 }
-    );
-  }
+  // Shoots without a roster (family/individual sessions — most shoots) have
+  // no student to gate on, so fall back to shoot-level payment: any paid
+  // invoice for this shoot unlocks all of its unassigned photos. Rostered
+  // shoots keep the stricter per-student check.
+  const paidQuery = photo.student_id
+    ? supabase.from("invoices").select("id").eq("student_id", photo.student_id).eq("status", "paid")
+    : supabase.from("invoices").select("id").eq("shoot_id", photo.shoot_id).eq("status", "paid");
 
-  const { data: paidInvoice } = await supabase
-    .from("invoices")
-    .select("id")
-    .eq("student_id", photo.student_id)
-    .eq("status", "paid")
-    .limit(1)
-    .maybeSingle();
+  const { data: paidInvoice } = await paidQuery.limit(1).maybeSingle();
 
   if (!paidInvoice) {
     return NextResponse.json(

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CopyLinkButton } from "@/components/app/copy-link-button";
+import { DeleteShootButton } from "@/components/app/delete-shoot-button";
 import { STUDENT_STATUS_LABELS, type Shoot, type Student } from "@/lib/types";
 
 export default async function ShootDetailPage({
@@ -43,43 +44,57 @@ export default async function ShootDetailPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">{shoot.school_name}</h1>
-        <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <CalendarDays className="size-4" />
-            {new Date(shoot.shoot_date + "T00:00:00").toLocaleDateString(undefined, {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
-          {shoot.location && (
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold">{shoot.school_name}</h1>
+          <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <MapPin className="size-4" />
-              {shoot.location}
+              <CalendarDays className="size-4" />
+              {new Date(shoot.shoot_date + "T00:00:00").toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
             </span>
-          )}
+            {shoot.location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-4" />
+                {shoot.location}
+              </span>
+            )}
+          </div>
         </div>
+        <DeleteShootButton shootId={shoot.id} shootName={shoot.school_name} />
+      </div>
+
+      {/* Gallery isn't gated behind having a roster — most shoots (family
+          sessions, individual portraits) never get one. */}
+      <div className="flex flex-wrap gap-3">
+        <Button render={<Link href={`/shoots/${shoot.id}/gallery`} />}>
+          <Images className="size-4" />
+          Gallery &amp; photo uploads
+        </Button>
+        <CopyLinkButton path={`/g/${shoot.id}`} />
       </div>
 
       {total === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-14 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Upload className="size-6" />
+          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Upload className="size-5" />
             </div>
             <div>
-              <p className="font-heading text-lg font-semibold">No roster yet</p>
+              <p className="font-heading text-lg font-semibold">No roster on this shoot</p>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Import the school&rsquo;s CSV to assign shoot numbers and get ready for
-                check-in.
+                That&rsquo;s expected for a family or individual session. A roster is only
+                needed if you&rsquo;re running check-in for a group — a school, team, or
+                similar — and want photos auto-matched by shoot number.
               </p>
             </div>
-            <Button render={<Link href={`/shoots/${shoot.id}/import`} />}>
+            <Button variant="outline" render={<Link href={`/shoots/${shoot.id}/import`} />}>
               <Upload className="size-4" />
-              Import roster
+              Import a roster (optional)
             </Button>
           </CardContent>
         </Card>
@@ -97,11 +112,6 @@ export default async function ShootDetailPage({
               <ScanLine className="size-4" />
               Open check-in
             </Button>
-            <Button variant="outline" render={<Link href={`/shoots/${shoot.id}/gallery`} />}>
-              <Images className="size-4" />
-              Gallery
-            </Button>
-            <CopyLinkButton path={`/g/${shoot.id}`} />
             <Button
               variant="outline"
               render={<a href={`/shoots/${shoot.id}/shot-log.csv`} download />}
