@@ -57,6 +57,16 @@ export default async function InvoiceDetailPage({
       <div className="flex flex-wrap gap-3">
         <PaymentStatusToggle invoiceId={invoice.id} status={invoice.status} />
         <CopyLinkButton path={`/i/${invoice.id}`} />
+        {invoice.stripe_hosted_invoice_url && (
+          <a
+            href={invoice.stripe_hosted_invoice_url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View in Stripe
+          </a>
+        )}
       </div>
 
       <Card>

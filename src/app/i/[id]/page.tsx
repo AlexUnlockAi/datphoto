@@ -101,7 +101,15 @@ export default async function PublicInvoicePage({
           </span>
         </div>
 
-        {invoice.status === "unpaid" && (
+        {invoice.status === "unpaid" && invoice.stripe_hosted_invoice_url && (
+          <a
+            href={invoice.stripe_hosted_invoice_url}
+            className="mt-8 block bg-primary py-3 text-center font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Pay {formatCents(invoice.total_cents)} now
+          </a>
+        )}
+        {invoice.status === "unpaid" && !invoice.stripe_hosted_invoice_url && (
           <form action={`/api/checkout/${invoice.id}`} method="POST" className="mt-8">
             <button
               type="submit"

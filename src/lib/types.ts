@@ -56,6 +56,7 @@ export type Client = {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  stripe_customer_id: string | null;
   created_at: string;
 };
 
@@ -81,6 +82,8 @@ export type Invoice = {
   paid_at: string | null;
   stripe_checkout_session_id: string | null;
   stripe_payment_intent_id: string | null;
+  stripe_invoice_id: string | null;
+  stripe_hosted_invoice_url: string | null;
   created_at: string;
 };
 

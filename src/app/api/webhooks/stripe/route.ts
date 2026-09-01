@@ -23,6 +23,9 @@ export async function POST(req: Request) {
     );
   }
 
+  // Legacy path: an invoice paid through our own /api/checkout Checkout
+  // Session (invoices created before real Stripe Invoicing, or if it
+  // failed at creation time and fell back).
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const invoiceId = session.metadata?.invoice_id;
@@ -39,6 +42,21 @@ export async function POST(req: Request) {
         })
         .eq("id", invoiceId);
     }
+  }
+
+  // Primary path: a real Stripe Invoice (created via the Invoicing API) was
+  // paid — either through Stripe's hosted page or marked paid_out_of_band
+  // when we sync a manual "mark paid" from the dashboard.
+  if (event.type === "invoice.paid") {
+    const stripeInvoice = event.data.object;
+    const supabase = createServiceClient();
+    await supabase
+      .from("invoices")
+      .update({
+        status: "paid",
+        paid_at: new Date().toISOString(),
+      })
+      .eq("stripe_invoice_id", stripeInvoice.id);
   }
 
   return NextResponse.json({ received: true });
