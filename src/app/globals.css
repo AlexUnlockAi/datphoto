@@ -1,0 +1,105 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
+  --font-mono: ui-monospace, "SFMono-Regular", monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Brand theme, pulled directly from datphotography.org: near-black,
+   cream text, warm gold accent, sharp near-square corners. Single dark
+   theme — the site itself has no light mode, so neither does this. */
+:root {
+  --background: #040609;
+  --foreground: #f1eee7;
+  --card: #0a0d11;
+  --card-foreground: #f1eee7;
+  --popover: #0a0d11;
+  --popover-foreground: #f1eee7;
+  --primary: #d1a84b;
+  --primary-foreground: #040609;
+  --secondary: #13161a;
+  --secondary-foreground: #f1eee7;
+  --muted: #171b1f;
+  --muted-foreground: #948f82;
+  --accent: #d1a84b;
+  --accent-foreground: #040609;
+  --destructive: #e5484d;
+  --border: #25292e;
+  --input: #171b1f;
+  --ring: #d1a84b;
+  --chart-1: #d1a84b;
+  --chart-2: #009588;
+  --chart-3: #104e64;
+  --chart-4: #fcbb00;
+  --chart-5: #f99c00;
+  --radius: 0.125rem;
+  --sidebar: #080c0f;
+  --sidebar-foreground: #f1eee7;
+  --sidebar-primary: #d1a84b;
+  --sidebar-primary-foreground: #040609;
+  --sidebar-accent: #13161a;
+  --sidebar-accent-foreground: #f1eee7;
+  --sidebar-border: #25292e;
+  --sidebar-ring: #d1a84b;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+}
