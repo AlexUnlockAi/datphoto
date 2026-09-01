@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut, Receipt, FileText, Users } from "lucide-react";
+import { LayoutDashboard, Camera, LogOut, Receipt, FileText, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
 
 const LINKS = [
-  { href: "/", label: "Shoots", icon: LayoutDashboard, exact: true },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/shoots", label: "Shoots", icon: Camera },
   { href: "/quotes", label: "Quotes", icon: FileText },
   { href: "/invoices", label: "Invoices", icon: Receipt },
   { href: "/clients", label: "Clients", icon: Users },

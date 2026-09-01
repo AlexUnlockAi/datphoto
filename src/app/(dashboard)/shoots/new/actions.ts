@@ -33,6 +33,6 @@ export async function createShoot(
     return { error: error?.message ?? "Could not create shoot." };
   }
 
-  revalidatePath("/");
+  revalidatePath("/shoots");
   redirect(`/shoots/${data.id}`);
 }

@@ -47,7 +47,7 @@ export async function importRoster(
   }
 
   revalidatePath(`/shoots/${shootId}`);
-  revalidatePath("/");
+  revalidatePath("/shoots");
 
   return { inserted: toInsert.length };
 }

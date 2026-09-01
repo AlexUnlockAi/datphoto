@@ -39,7 +39,7 @@ export default async function ShootGalleryPage({
         <h1 className="font-heading text-2xl">Gallery — {shoot.school_name}</h1>
         <p className="text-sm text-muted-foreground">
           Photos are watermarked automatically on upload. Full-resolution downloads unlock
-          per student once their invoice is paid.
+          per subject once their invoice is paid.
         </p>
       </div>
 

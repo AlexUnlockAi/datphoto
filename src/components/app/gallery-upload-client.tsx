@@ -115,7 +115,7 @@ export function GalleryUploadClient({
             <div>
               <p className="font-medium">Click to choose photos</p>
               <p className="text-sm text-muted-foreground">
-                Name files with the shoot number (e.g. 042.jpg) to auto-match students.
+                Name files with the shoot number (e.g. 042.jpg) to auto-match subjects.
               </p>
             </div>
           </label>
@@ -138,8 +138,8 @@ export function GalleryUploadClient({
             <CardTitle>{rows.length} photos selected</CardTitle>
             <CardDescription>
               {unmatchedCount > 0
-                ? `${unmatchedCount} unmatched — assign a student or leave unassigned.`
-                : "All matched to a student."}
+                ? `${unmatchedCount} unmatched — assign a subject or leave unassigned.`
+                : "All matched to a subject."}
             </CardDescription>
           </CardHeader>
           <CardContent className="max-h-[28rem] space-y-2 overflow-y-auto">

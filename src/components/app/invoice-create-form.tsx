@@ -114,7 +114,7 @@ export function InvoiceCreateForm({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Student (optional)</Label>
+            <Label>Subject (optional)</Label>
             <Select
               value={studentId}
               onValueChange={(v) => setStudentId(v ?? "")}

@@ -129,7 +129,7 @@ export default async function ShootDetailPage({
                     <tr className="border-b border-border text-left text-muted-foreground">
                       <th className="px-4 py-2 font-medium">#</th>
                       <th className="px-4 py-2 font-medium">Name</th>
-                      <th className="px-4 py-2 font-medium">Grade / Teacher</th>
+                      <th className="px-4 py-2 font-medium">Group / Note</th>
                       <th className="px-4 py-2 font-medium">Status</th>
                     </tr>
                   </thead>

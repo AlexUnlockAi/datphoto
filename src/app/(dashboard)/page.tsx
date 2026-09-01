@@ -1,104 +1,243 @@
 import Link from "next/link";
-import { ArrowRight, Camera, MapPin } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ShootCreateForm } from "@/components/app/shoot-create-form";
-import type { Shoot, Student } from "@/lib/types";
+  DollarSign,
+  Wallet,
+  TrendingUp,
+  Camera,
+  MapPin,
+  FileText,
+  Receipt,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InvoiceStatusBadge } from "@/components/app/invoice-status-badge";
+import { QuoteStatusBadge } from "@/components/app/quote-status-badge";
+import { RevenueChart, type MonthlyRevenue } from "@/components/app/revenue-chart";
+import { formatCents } from "@/lib/money";
+import type { Client, Invoice, Quote, Shoot } from "@/lib/types";
 
-export default async function ShootsPage() {
+export default async function DashboardPage() {
   const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
 
-  const [shootsRes, studentsRes] = await Promise.all([
-    supabase.from("shoots").select("*").order("shoot_date", { ascending: false }),
-    supabase.from("students").select("shoot_id, status"),
+  const [invoicesRes, quotesRes, shootsRes, clientsRes] = await Promise.all([
+    supabase.from("invoices").select("*").order("created_at", { ascending: false }),
+    supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(10),
+    supabase.from("shoots").select("*").order("shoot_date", { ascending: true }),
+    supabase.from("clients").select("id, name"),
   ]);
 
+  const invoices = (invoicesRes.data ?? []) as Invoice[];
+  const quotes = (quotesRes.data ?? []) as Quote[];
   const shoots = (shootsRes.data ?? []) as Shoot[];
-  const students = (studentsRes.data ?? []) as Pick<Student, "shoot_id" | "status">[];
+  const clients = new Map(
+    ((clientsRes.data ?? []) as Pick<Client, "id" | "name">[]).map((c) => [c.id, c.name])
+  );
 
-  const countsByShoot = new Map<string, { total: number; done: number }>();
-  for (const s of students) {
-    const entry = countsByShoot.get(s.shoot_id) ?? { total: 0, done: 0 };
-    entry.total += 1;
-    if (s.status === "photographed") entry.done += 1;
-    countsByShoot.set(s.shoot_id, entry);
-  }
+  const paid = invoices.filter((i) => i.status === "paid");
+  const unpaid = invoices.filter((i) => i.status === "unpaid");
+  const totalRevenueCents = paid.reduce((sum, i) => sum + i.total_cents, 0);
+  const outstandingCents = unpaid.reduce((sum, i) => sum + i.total_cents, 0);
+
+  const now = new Date();
+  const monthLabel = (offset: number) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+    return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString(undefined, { month: "short" }) };
+  };
+  const months = Array.from({ length: 6 }, (_, i) => monthLabel(5 - i));
+  const revenueByMonth: MonthlyRevenue[] = months.map(({ key, label }) => {
+    const cents = paid.reduce((sum, i) => {
+      if (!i.paid_at) return sum;
+      const d = new Date(i.paid_at);
+      const k = `${d.getFullYear()}-${d.getMonth()}`;
+      return k === key ? sum + i.total_cents : sum;
+    }, 0);
+    return { label, cents };
+  });
+  const thisMonthCents = revenueByMonth[revenueByMonth.length - 1]?.cents ?? 0;
+
+  const upcomingShoots = shoots.filter((s) => s.shoot_date >= today).slice(0, 5);
+
+  type Activity = {
+    id: string;
+    kind: "invoice" | "quote";
+    number: string;
+    clientName: string;
+    totalCents: number;
+    status: string;
+    createdAt: string;
+  };
+  const activity: Activity[] = [
+    ...invoices.map((i) => ({
+      id: i.id,
+      kind: "invoice" as const,
+      number: i.invoice_number,
+      clientName: clients.get(i.client_id) ?? "Unknown",
+      totalCents: i.total_cents,
+      status: i.status,
+      createdAt: i.created_at,
+    })),
+    ...quotes.map((q) => ({
+      id: q.id,
+      kind: "quote" as const,
+      number: q.quote_number,
+      clientName: clients.get(q.client_id) ?? "Unknown",
+      totalCents: q.total_cents,
+      status: q.status,
+      createdAt: q.created_at,
+    })),
+  ]
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .slice(0, 8);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-2xl font-semibold">Shoots</h1>
+        <h1 className="font-heading text-2xl">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Every school shoot, roster, and check-in progress in one place.
+          Revenue, outstanding balance, and what&rsquo;s coming up.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-4">
-          {shoots.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-sm text-muted-foreground">
-                No shoots yet — create your first one to get started.
-              </CardContent>
-            </Card>
-          ) : (
-            shoots.map((shoot) => {
-              const counts = countsByShoot.get(shoot.id) ?? { total: 0, done: 0 };
-              return (
-                <Link key={shoot.id} href={`/shoots/${shoot.id}`}>
-                  <Card className="transition-shadow hover:shadow-md">
-                    <CardHeader className="flex flex-row items-start justify-between gap-4">
-                      <div>
-                        <CardTitle className="text-lg">{shoot.school_name}</CardTitle>
-                        <CardDescription className="mt-1 flex items-center gap-3">
-                          <span>
-                            {new Date(shoot.shoot_date + "T00:00:00").toLocaleDateString(
-                              undefined,
-                              { month: "short", day: "numeric", year: "numeric" }
-                            )}
-                          </span>
-                          {shoot.location && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="size-3.5" />
-                              {shoot.location}
-                            </span>
-                          )}
-                        </CardDescription>
-                      </div>
-                      <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="flex items-center gap-3">
-                      <Badge variant={counts.total === 0 ? "outline" : "secondary"}>
-                        <Camera className="size-3" />
-                        {counts.total === 0
-                          ? "No roster yet"
-                          : `${counts.done} / ${counts.total} photographed`}
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })
-          )}
-        </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile
+          icon={DollarSign}
+          label="Total revenue"
+          value={formatCents(totalRevenueCents)}
+        />
+        <StatTile
+          icon={TrendingUp}
+          label="This month"
+          value={formatCents(thisMonthCents)}
+        />
+        <StatTile
+          icon={Wallet}
+          label="Outstanding"
+          value={formatCents(outstandingCents)}
+          tone={outstandingCents > 0 ? "text-amber-400" : undefined}
+        />
+        <StatTile
+          icon={Camera}
+          label="Upcoming shoots"
+          value={String(upcomingShoots.length)}
+        />
+      </div>
 
-        <Card className="h-fit">
+      <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+        <Card size="sm">
           <CardHeader>
-            <CardTitle>New shoot</CardTitle>
-            <CardDescription>Set up a school before shoot day.</CardDescription>
+            <CardTitle>Revenue — last 6 months</CardTitle>
           </CardHeader>
           <CardContent>
-            <ShootCreateForm />
+            <RevenueChart data={revenueByMonth} />
+          </CardContent>
+        </Card>
+
+        <Card size="sm">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Upcoming shoots</CardTitle>
+            <Link href="/shoots" className="text-xs text-primary hover:underline">
+              View all
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {upcomingShoots.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Nothing scheduled.
+              </p>
+            ) : (
+              upcomingShoots.map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/shoots/${s.id}`}
+                  className="flex items-center justify-between gap-2 border border-border px-3 py-2 text-sm transition-colors hover:border-primary/40"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{s.school_name}</p>
+                    {s.location && (
+                      <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                        <MapPin className="size-3" />
+                        {s.location}
+                      </p>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {new Date(s.shoot_date + "T00:00:00").toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </Link>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
+
+      <Card size="sm">
+        <CardHeader>
+          <CardTitle>Recent activity</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {activity.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nothing yet — create a quote or invoice to see it here.
+            </p>
+          ) : (
+            activity.map((a) => (
+              <Link
+                key={`${a.kind}-${a.id}`}
+                href={a.kind === "invoice" ? `/invoices/${a.id}` : `/quotes/${a.id}`}
+                className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm last:border-0"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {a.kind === "invoice" ? (
+                    <Receipt className="size-4 shrink-0 text-muted-foreground" />
+                  ) : (
+                    <FileText className="size-4 shrink-0 text-muted-foreground" />
+                  )}
+                  <span className="shrink-0 font-medium">{a.number}</span>
+                  <span className="truncate text-muted-foreground">{a.clientName}</span>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <span>{formatCents(a.totalCents)}</span>
+                  {a.kind === "invoice" ? (
+                    <InvoiceStatusBadge status={a.status as Invoice["status"]} />
+                  ) : (
+                    <QuoteStatusBadge status={a.status as Quote["status"]} />
+                  )}
+                </div>
+              </Link>
+            ))
+          )}
+        </CardContent>
+      </Card>
     </div>
+  );
+}
+
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  tone?: string;
+}) {
+  return (
+    <Card size="sm">
+      <CardContent className="flex items-center gap-3 py-1">
+        <div className="flex size-9 shrink-0 items-center justify-center bg-primary/10 text-primary">
+          <Icon className="size-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-xs text-muted-foreground">{label}</p>
+          <p className={`font-heading text-lg ${tone ?? ""}`}>{value}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

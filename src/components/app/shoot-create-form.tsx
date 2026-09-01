@@ -19,8 +19,13 @@ export function ShootCreateForm() {
   return (
     <form action={action} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="school_name">School name</Label>
-        <Input id="school_name" name="school_name" required placeholder="Lincoln Elementary" />
+        <Label htmlFor="school_name">Shoot name</Label>
+        <Input
+          id="school_name"
+          name="school_name"
+          required
+          placeholder="e.g. Smith Wedding, Lincoln Elementary, Eagles U12"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="shoot_date">Shoot date</Label>

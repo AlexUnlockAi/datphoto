@@ -138,7 +138,7 @@ export function CsvImportClient({ shootId }: { shootId: string }) {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
           <ColumnPicker label="Full name (required)" value={nameCol} onChange={setNameCol} headers={headers} />
-          <ColumnPicker label="Grade / teacher" value={gradeCol} onChange={setGradeCol} headers={headers} optional />
+          <ColumnPicker label="Group / note" value={gradeCol} onChange={setGradeCol} headers={headers} optional />
           <ColumnPicker label="Student ID" value={idCol} onChange={setIdCol} headers={headers} optional />
         </CardContent>
       </Card>
