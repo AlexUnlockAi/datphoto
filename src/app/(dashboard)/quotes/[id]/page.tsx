@@ -68,23 +68,42 @@ export default async function QuoteDetailPage({
         )}
       </div>
 
+      {quote.intro_message && (
+        <Card size="sm">
+          <CardHeader>
+            <p className="hud-label">Cover message</p>
+          </CardHeader>
+          <CardContent className="text-sm whitespace-pre-line text-muted-foreground">
+            {quote.intro_message}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
+          <p className="hud-label">Justification</p>
           <CardTitle>Line items</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between text-sm">
-              <span>
-                {item.description}
-                {item.quantity > 1 ? ` × ${item.quantity}` : ""}
-              </span>
-              <span className="text-muted-foreground">
-                {formatCents(item.quantity * item.unit_price_cents)}
-              </span>
+            <div key={item.id} className="space-y-1 border-b border-border pb-3 last:border-0">
+              <div className="flex items-start justify-between gap-3 text-sm">
+                <span className="font-medium">
+                  {item.description}
+                  {item.quantity > 1 ? ` × ${item.quantity}` : ""}
+                </span>
+                <span className="shrink-0 font-mono text-muted-foreground">
+                  {formatCents(item.quantity * item.unit_price_cents)}
+                </span>
+              </div>
+              {item.detail && (
+                <p className="text-sm whitespace-pre-line text-muted-foreground">
+                  {item.detail}
+                </p>
+              )}
             </div>
           ))}
-          <div className="flex items-center justify-between border-t border-border pt-3">
+          <div className="flex items-center justify-between pt-1">
             <span className="font-medium">Total</span>
             <span className="font-heading text-xl text-primary">
               {formatCents(quote.total_cents)}
@@ -94,11 +113,13 @@ export default async function QuoteDetailPage({
       </Card>
 
       {quote.notes && (
-        <Card>
+        <Card size="sm">
           <CardHeader>
-            <CardTitle>Notes</CardTitle>
+            <p className="hud-label">Terms</p>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{quote.notes}</CardContent>
+          <CardContent className="text-sm whitespace-pre-line text-muted-foreground">
+            {quote.notes}
+          </CardContent>
         </Card>
       )}
     </div>

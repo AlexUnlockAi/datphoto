@@ -66,18 +66,36 @@ export default async function PublicQuotePage({
           </div>
         )}
 
-        <div className="mt-8 space-y-3">
-          {items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between text-sm">
-              <span>
-                {item.description}
-                {item.quantity > 1 ? ` × ${item.quantity}` : ""}
-              </span>
-              <span className="text-muted-foreground">
-                {formatCents(item.quantity * item.unit_price_cents)}
-              </span>
-            </div>
-          ))}
+        {quote.intro_message && (
+          <p className="mt-6 border border-border bg-card px-5 py-4 text-sm leading-relaxed whitespace-pre-line text-foreground/90">
+            {quote.intro_message}
+          </p>
+        )}
+
+        <div className="mt-10">
+          <p className="text-xs tracking-[0.15em] text-muted-foreground uppercase">
+            What&rsquo;s included
+          </p>
+          <div className="mt-3 space-y-5">
+            {items.map((item) => (
+              <div key={item.id} className="border-l-2 border-primary/40 pl-4">
+                <div className="flex items-start justify-between gap-4">
+                  <p className="font-medium">
+                    {item.description}
+                    {item.quantity > 1 ? ` × ${item.quantity}` : ""}
+                  </p>
+                  <p className="shrink-0 font-medium text-primary">
+                    {formatCents(item.quantity * item.unit_price_cents)}
+                  </p>
+                </div>
+                {item.detail && (
+                  <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                    {item.detail}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="mt-8 flex items-center justify-between border-t border-border pt-4">
@@ -119,7 +137,14 @@ export default async function PublicQuotePage({
         )}
 
         {quote.notes && (
-          <p className="mt-8 text-sm whitespace-pre-line text-muted-foreground">{quote.notes}</p>
+          <div className="mt-10 border-t border-border pt-6">
+            <p className="text-xs tracking-[0.15em] text-muted-foreground uppercase">
+              Terms
+            </p>
+            <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+              {quote.notes}
+            </p>
+          </div>
         )}
       </div>
     </div>

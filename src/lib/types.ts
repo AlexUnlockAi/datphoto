@@ -113,6 +113,7 @@ export type Quote = {
   status: QuoteStatus;
   issue_date: string;
   expires_date: string | null;
+  intro_message: string | null;
   notes: string | null;
   total_cents: number;
   accepted_invoice_id: string | null;
@@ -123,6 +124,7 @@ export type QuoteItem = {
   id: string;
   quote_id: string;
   description: string;
+  detail: string | null;
   quantity: number;
   unit_price_cents: number;
   sort_order: number;

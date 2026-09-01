@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type QuoteItemInput = {
   description: string;
+  detail: string | null;
   quantity: number;
   unit_price_cents: number;
 };
@@ -14,6 +15,7 @@ export async function createQuote(input: {
   clientId: string;
   shootId: string | null;
   expiresDate: string | null;
+  introMessage: string | null;
   notes: string | null;
   items: QuoteItemInput[];
 }): Promise<{ error?: string }> {
@@ -39,6 +41,7 @@ export async function createQuote(input: {
       client_id: input.clientId,
       shoot_id: input.shootId,
       expires_date: input.expiresDate,
+      intro_message: input.introMessage,
       notes: input.notes,
       total_cents: totalCents,
     })
@@ -53,6 +56,7 @@ export async function createQuote(input: {
     items.map((item, i) => ({
       quote_id: quote.id,
       description: item.description,
+      detail: item.detail,
       quantity: item.quantity,
       unit_price_cents: item.unit_price_cents,
       sort_order: i,

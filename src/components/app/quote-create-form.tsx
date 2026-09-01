@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ export function QuoteCreateForm({
   const [clientId, setClientId] = useState(defaultClientId ?? "");
   const [shootId, setShootId] = useState<string>("");
   const [expiresDate, setExpiresDate] = useState("");
+  const [introMessage, setIntroMessage] = useState("");
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<LineItemRow[]>([{ ...EMPTY_LINE_ITEM_ROW }]);
   const [submitting, setSubmitting] = useState(false);
@@ -49,9 +51,11 @@ export function QuoteCreateForm({
       clientId,
       shootId: shootId || null,
       expiresDate: expiresDate || null,
+      introMessage: introMessage || null,
       notes: notes || null,
       items: rows.map((r) => ({
         description: r.description.trim(),
+        detail: (r.detail ?? "").trim() || null,
         quantity: Number.parseInt(r.quantity, 10) || 1,
         unit_price_cents: dollarsToCents(r.unitPrice || "0"),
       })),
@@ -114,18 +118,37 @@ export function QuoteCreateForm({
 
       <Card>
         <CardHeader>
+          <CardTitle>Cover message</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Label htmlFor="intro">
+            Introduce the shoot and why this quote is priced the way it is
+          </Label>
+          <Textarea
+            id="intro"
+            value={introMessage}
+            onChange={(e) => setIntroMessage(e.target.value)}
+            placeholder="Hi [Client] — thanks for the chance to shoot your team's photo day. Here's what I'd propose, based on a squad of ~120 athletes across 4 sports..."
+            className="min-h-24"
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Line items</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <LineItemsEditor rows={rows} onChange={setRows} />
+          <LineItemsEditor rows={rows} onChange={setRows} showDetail />
 
           <div className="space-y-2 pt-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
-            <Input
+            <Label htmlFor="notes">Terms &amp; payment details (optional)</Label>
+            <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Terms, package details, etc."
+              placeholder="50% deposit due at booking, balance due on delivery. Quote valid for 14 days. Usage rights, reschedule policy, etc."
+              className="min-h-20"
             />
           </div>
         </CardContent>

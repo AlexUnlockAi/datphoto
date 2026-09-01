@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Quote, QuoteItem } from "@/lib/types";
+import { createStripeInvoice } from "@/lib/stripe-invoice";
+import type { Client, Quote, QuoteItem } from "@/lib/types";
 
 // Public route — triggered by the "Accept" form on /q/[id]. Copies the quote
 // and its items into a real invoice, same reasoning as the other public
@@ -37,6 +38,26 @@ export async function POST(
 
   const items = (itemsData ?? []) as QuoteItem[];
 
+  const { data: clientData } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("id", quote.client_id)
+    .maybeSingle();
+
+  const stripeResult = clientData
+    ? await createStripeInvoice(
+        supabase,
+        clientData as Client,
+        items.map((i) => ({
+          description: i.description,
+          quantity: i.quantity,
+          unit_price_cents: i.unit_price_cents,
+        })),
+        null,
+        quote.notes
+      )
+    : { invoiceId: null, hostedUrl: null };
+
   const { data: invoice, error: invoiceError } = await supabase
     .from("invoices")
     .insert({
@@ -44,6 +65,8 @@ export async function POST(
       shoot_id: quote.shoot_id,
       notes: quote.notes,
       total_cents: quote.total_cents,
+      stripe_invoice_id: stripeResult.invoiceId,
+      stripe_hosted_invoice_url: stripeResult.hostedUrl,
     })
     .select("id")
     .single();
