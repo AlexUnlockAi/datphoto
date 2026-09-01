@@ -69,6 +69,10 @@ async function createStripeInvoice(
       days_until_due: daysUntilDue,
       description: notes ?? undefined,
       auto_advance: false,
+      // Stripe does not auto-attach pending invoice items unless told to —
+      // without this the invoice finalizes empty ($0.00) even though the
+      // invoice items above were created successfully.
+      pending_invoice_items_behavior: "include",
     });
 
     const finalized = await stripe.invoices.finalizeInvoice(draft.id!);
