@@ -50,13 +50,24 @@ export async function POST(req: Request) {
   if (event.type === "invoice.paid") {
     const stripeInvoice = event.data.object;
     const supabase = createServiceClient();
-    await supabase
+    const { data: updated } = await supabase
       .from("invoices")
       .update({
         status: "paid",
         paid_at: new Date().toISOString(),
       })
-      .eq("stripe_invoice_id", stripeInvoice.id);
+      .eq("stripe_invoice_id", stripeInvoice.id)
+      .select("id")
+      .maybeSingle();
+
+    // A gallery print order paid this way unlocks exactly the photos the
+    // client assigned to it — see /api/gallery-orders and /g/[shootId].
+    if (updated?.id) {
+      await supabase
+        .from("gallery_orders")
+        .update({ status: "paid" })
+        .eq("invoice_id", updated.id);
+    }
   }
 
   return NextResponse.json({ received: true });

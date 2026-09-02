@@ -47,6 +47,12 @@ export async function setInvoiceStatus(
     return { error: error.message };
   }
 
+  // Keep a linked gallery print order (see /api/gallery-orders) in sync
+  // immediately rather than waiting on the Stripe webhook.
+  if (status === "paid") {
+    await supabase.from("gallery_orders").update({ status: "paid" }).eq("invoice_id", invoiceId);
+  }
+
   revalidatePath(`/invoices/${invoiceId}`);
   revalidatePath("/invoices");
 

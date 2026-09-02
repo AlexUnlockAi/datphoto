@@ -30,9 +30,19 @@ export async function GET(
     ? supabase.from("invoices").select("id").eq("student_id", photo.student_id).eq("status", "paid")
     : supabase.from("invoices").select("id").eq("shoot_id", photo.shoot_id).eq("status", "paid");
 
-  const { data: paidInvoice } = await paidQuery.limit(1).maybeSingle();
+  const [{ data: paidInvoice }, { data: orderItems }] = await Promise.all([
+    paidQuery.limit(1).maybeSingle(),
+    supabase.from("gallery_order_items").select("gallery_orders(status)").eq("photo_id", photo.id),
+  ]);
 
-  if (!paidInvoice) {
+  // A client's paid print-package order unlocks exactly the photos they
+  // picked, on top of the broader invoice-based checks above.
+  const unlockedByOrder = (orderItems ?? []).some(
+    (item) => (item as unknown as { gallery_orders: { status: string } | null }).gallery_orders
+      ?.status === "paid"
+  );
+
+  if (!paidInvoice && !unlockedByOrder) {
     return NextResponse.json(
       { error: "This photo hasn't been purchased yet" },
       { status: 403 }

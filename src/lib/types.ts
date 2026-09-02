@@ -140,3 +140,24 @@ export type Photo = {
   sort_order: number;
   created_at: string;
 };
+
+export type GalleryOrderStatus = "pending" | "paid";
+
+export type GalleryOrder = {
+  id: string;
+  shoot_id: string;
+  client_id: string | null;
+  package_id: string;
+  total_cents: number;
+  status: GalleryOrderStatus;
+  invoice_id: string | null;
+  created_at: string;
+};
+
+export type GalleryOrderItem = {
+  id: string;
+  order_id: string;
+  photo_id: string;
+  print_size: string;
+  slot_index: number;
+};

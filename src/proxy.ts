@@ -50,11 +50,12 @@ export async function proxy(request: NextRequest) {
 export const config = {
   // Everything except: webhooks (no Supabase session), the Stripe checkout
   // redirect, the quote accept/decline actions, the public photo download
-  // route (self-checks payment), and the public invoice (/i), quote (/q),
-  // and gallery (/g) links — all reached from clients with no login — plus
-  // static assets and Next internals. /api/photos/upload is also under this
-  // exemption but has its own explicit auth check inside the route.
+  // route (self-checks payment), the public gallery print-order checkout,
+  // and the public invoice (/i), quote (/q), and gallery (/g) links — all
+  // reached from clients with no login — plus static assets and Next
+  // internals. /api/photos/upload is also under this exemption but has its
+  // own explicit auth check inside the route.
   matcher: [
-    "/((?!api/webhooks|api/checkout|api/quotes|api/photos|i/|q/|g/|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/webhooks|api/checkout|api/quotes|api/photos|api/gallery-orders|i/|q/|g/|_next/static|_next/image|favicon.ico).*)",
   ],
 };
