@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Send, Ban } from "lucide-react";
+import { Ban } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { setQuoteStatus } from "@/app/(dashboard)/quotes/[id]/actions";
@@ -27,17 +27,9 @@ export function QuoteStatusToggle({
   if (status === "accepted" || status === "declined") return null;
 
   return (
-    <div className="flex gap-2">
-      {status === "draft" && (
-        <Button disabled={pending} onClick={() => set("sent")}>
-          <Send className="size-4" />
-          Mark sent
-        </Button>
-      )}
-      <Button variant="outline" disabled={pending} onClick={() => set("declined")}>
-        <Ban className="size-4" />
-        Mark declined
-      </Button>
-    </div>
+    <Button variant="outline" disabled={pending} onClick={() => set("declined")}>
+      <Ban className="size-4" />
+      Mark declined
+    </Button>
   );
 }

@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeInvoice } from "@/lib/stripe-invoice";
+import { sendInvoiceEmail } from "@/lib/email";
+import { siteUrl } from "@/lib/site-url";
 import type { Client } from "@/lib/types";
 
 export type InvoiceItemInput = {
@@ -19,6 +21,7 @@ export async function createInvoice(input: {
   dueDate: string | null;
   notes: string | null;
   items: InvoiceItemInput[];
+  sendEmail: boolean;
 }): Promise<{ error?: string }> {
   const items = input.items.filter((i) => i.description.trim().length > 0);
 
@@ -58,7 +61,7 @@ export async function createInvoice(input: {
       stripe_invoice_id: stripeResult.invoiceId,
       stripe_hosted_invoice_url: stripeResult.hostedUrl,
     })
-    .select("id")
+    .select("id, invoice_number")
     .single();
 
   if (error || !invoice) {
@@ -77,6 +80,19 @@ export async function createInvoice(input: {
 
   if (itemsError) {
     return { error: itemsError.message };
+  }
+
+  if (input.sendEmail && clientData?.email) {
+    const result = await sendInvoiceEmail({
+      to: clientData.email,
+      clientName: clientData.name,
+      invoiceNumber: invoice.invoice_number,
+      totalCents,
+      url: siteUrl(`/i/${invoice.id}`),
+    });
+    // Best-effort — a failed send shouldn't block the invoice from
+    // existing. It can be resent from the invoice detail page.
+    if (result.error) console.error("Invoice email failed:", result.error);
   }
 
   revalidatePath("/invoices");

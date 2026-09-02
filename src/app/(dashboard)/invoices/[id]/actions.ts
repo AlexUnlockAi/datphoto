@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
-import type { InvoiceStatus } from "@/lib/types";
+import { sendInvoiceEmail } from "@/lib/email";
+import { siteUrl } from "@/lib/site-url";
+import type { Client, Invoice, InvoiceStatus } from "@/lib/types";
 
 export async function setInvoiceStatus(
   invoiceId: string,
@@ -48,5 +50,39 @@ export async function setInvoiceStatus(
   revalidatePath(`/invoices/${invoiceId}`);
   revalidatePath("/invoices");
 
+  return {};
+}
+
+export async function emailInvoiceToClient(invoiceId: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+
+  const { data: invoiceData } = await supabase
+    .from("invoices")
+    .select("*")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  const invoice = invoiceData as Invoice | null;
+  if (!invoice) return { error: "Invoice not found." };
+
+  const { data: clientData } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("id", invoice.client_id)
+    .maybeSingle();
+  const client = clientData as Client | null;
+  if (!client?.email) {
+    return { error: "This client doesn't have an email on file." };
+  }
+
+  const result = await sendInvoiceEmail({
+    to: client.email,
+    clientName: client.name,
+    invoiceNumber: invoice.invoice_number,
+    totalCents: invoice.total_cents,
+    url: siteUrl(`/i/${invoice.id}`),
+  });
+  if (result.error) return { error: result.error };
+
+  revalidatePath(`/invoices/${invoiceId}`);
   return {};
 }

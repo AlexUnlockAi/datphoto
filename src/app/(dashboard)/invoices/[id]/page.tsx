@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvoiceStatusBadge } from "@/components/app/invoice-status-badge";
 import { PaymentStatusToggle } from "@/components/app/payment-status-toggle";
+import { SendInvoiceButton } from "@/components/app/send-invoice-button";
 import { CopyLinkButton } from "@/components/app/copy-link-button";
 import { formatCents } from "@/lib/money";
 import type { Client, Invoice, InvoiceItem, Shoot } from "@/lib/types";
@@ -56,6 +57,7 @@ export default async function InvoiceDetailPage({
 
       <div className="flex flex-wrap gap-3">
         <PaymentStatusToggle invoiceId={invoice.id} status={invoice.status} />
+        {invoice.status === "unpaid" && <SendInvoiceButton invoiceId={invoice.id} />}
         <CopyLinkButton path={`/i/${invoice.id}`} />
         {invoice.stripe_hosted_invoice_url && (
           <a

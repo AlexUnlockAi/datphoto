@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -40,9 +41,11 @@ export function InvoiceCreateForm({
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<LineItemRow[]>([{ ...EMPTY_LINE_ITEM_ROW }]);
+  const [sendEmail, setSendEmail] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const studentsForShoot = shootId ? students.filter((s) => s.shoot_id === shootId) : [];
+  const selectedClient = clients.find((c) => c.id === clientId);
 
   async function handleSubmit() {
     if (!clientId) {
@@ -61,6 +64,7 @@ export function InvoiceCreateForm({
         quantity: Number.parseInt(r.quantity, 10) || 1,
         unit_price_cents: dollarsToCents(r.unitPrice || "0"),
       })),
+      sendEmail: sendEmail && !!selectedClient?.email,
     });
     setSubmitting(false);
 
@@ -163,7 +167,18 @@ export function InvoiceCreateForm({
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-4">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Checkbox
+            checked={sendEmail}
+            onCheckedChange={(v) => setSendEmail(v === true)}
+            disabled={!selectedClient?.email}
+          />
+          <Mail className="size-4" />
+          {selectedClient && !selectedClient.email
+            ? "Email this invoice — add an email to this client first"
+            : "Email this invoice to the client immediately"}
+        </label>
         <Button onClick={handleSubmit} disabled={submitting}>
           {submitting ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
           Create invoice

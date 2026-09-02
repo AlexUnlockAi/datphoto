@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteStatusBadge } from "@/components/app/quote-status-badge";
 import { QuoteStatusToggle } from "@/components/app/quote-status-toggle";
+import { SendQuoteButton } from "@/components/app/send-quote-button";
+import { ConvertQuoteButton } from "@/components/app/convert-quote-button";
 import { CopyLinkButton } from "@/components/app/copy-link-button";
 import { formatCents } from "@/lib/money";
 import type { Client, Quote, QuoteItem, Shoot } from "@/lib/types";
@@ -56,6 +58,12 @@ export default async function QuoteDetailPage({
       </div>
 
       <div className="flex flex-wrap gap-3">
+        {(quote.status === "draft" || quote.status === "sent") && (
+          <SendQuoteButton quoteId={quote.id} status={quote.status} />
+        )}
+        {(quote.status === "draft" || quote.status === "sent") && (
+          <ConvertQuoteButton quoteId={quote.id} />
+        )}
         <QuoteStatusToggle quoteId={quote.id} status={quote.status} />
         <CopyLinkButton path={`/q/${quote.id}`} />
         {quote.accepted_invoice_id && (

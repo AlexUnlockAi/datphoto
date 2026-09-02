@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendQuoteEmail } from "@/lib/email";
+import { siteUrl } from "@/lib/site-url";
+import type { Client } from "@/lib/types";
 
 export type QuoteItemInput = {
   description: string;
@@ -18,6 +21,7 @@ export async function createQuote(input: {
   introMessage: string | null;
   notes: string | null;
   items: QuoteItemInput[];
+  sendEmail: boolean;
 }): Promise<{ error?: string }> {
   const items = input.items.filter((i) => i.description.trim().length > 0);
 
@@ -45,7 +49,7 @@ export async function createQuote(input: {
       notes: input.notes,
       total_cents: totalCents,
     })
-    .select("id")
+    .select("id, quote_number")
     .single();
 
   if (error || !quote) {
@@ -65,6 +69,34 @@ export async function createQuote(input: {
 
   if (itemsError) {
     return { error: itemsError.message };
+  }
+
+  if (input.sendEmail) {
+    const { data: clientData } = await supabase
+      .from("clients")
+      .select("*")
+      .eq("id", input.clientId)
+      .maybeSingle();
+    const client = clientData as Client | null;
+
+    if (client?.email) {
+      const result = await sendQuoteEmail({
+        to: client.email,
+        clientName: client.name,
+        quoteNumber: quote.quote_number,
+        totalCents: totalCents,
+        introMessage: input.introMessage,
+        url: siteUrl(`/q/${quote.id}`),
+      });
+      // Best-effort, same as Stripe invoice creation elsewhere — a failed
+      // send shouldn't block the quote from existing. It can be resent
+      // from the quote detail page.
+      if (!result.error) {
+        await supabase.from("quotes").update({ status: "sent" }).eq("id", quote.id);
+      } else {
+        console.error("Quote email failed:", result.error);
+      }
+    }
   }
 
   revalidatePath("/quotes");
