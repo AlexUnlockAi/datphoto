@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { GalleryUploadClient } from "@/components/app/gallery-upload-client";
 import { PhotoGridManager } from "@/components/app/photo-grid-manager";
-import { CopyLinkButton } from "@/components/app/copy-link-button";
-import type { Photo, Shoot, Student } from "@/lib/types";
+import { GalleryFolderManager } from "@/components/app/gallery-folder-manager";
+import { createGalleryFolder } from "./actions";
+import type { GalleryFolder, Photo, Shoot, Student } from "@/lib/types";
 
 export default async function ShootGalleryPage({
   params,
@@ -13,7 +14,7 @@ export default async function ShootGalleryPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [shootRes, studentsRes, photosRes] = await Promise.all([
+  const [shootRes, studentsRes, photosRes, foldersRes] = await Promise.all([
     supabase.from("shoots").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("students")
@@ -25,6 +26,7 @@ export default async function ShootGalleryPage({
       .select("*")
       .eq("shoot_id", id)
       .order("created_at", { ascending: false }),
+    supabase.from("gallery_folders").select("*").eq("shoot_id", id).eq("is_active", true).order("created_at"),
   ]);
 
   const shoot = shootRes.data as Shoot | null;
@@ -32,6 +34,7 @@ export default async function ShootGalleryPage({
 
   const students = (studentsRes.data ?? []) as Student[];
   const photos = (photosRes.data ?? []) as Photo[];
+  const folders = (foldersRes.data ?? []) as GalleryFolder[];
 
   return (
     <div className="space-y-8">
@@ -43,10 +46,11 @@ export default async function ShootGalleryPage({
             once a client&rsquo;s order or invoice is paid.
           </p>
         </div>
-        <CopyLinkButton path={`/g/${shoot.id}`} />
       </div>
 
-      <GalleryUploadClient shootId={shoot.id} students={students} />
+      <GalleryFolderManager shootId={shoot.id} folders={folders} createFolder={createGalleryFolder} />
+
+      <GalleryUploadClient shootId={shoot.id} folderId={folders[0]?.id} students={students} />
 
       {photos.length > 0 && (
         <div>

@@ -14,6 +14,7 @@ type Assignment = { size: PrintSize; slotIndex: number; photoId: string };
 
 type OrderRequest = {
   shootId: string;
+  folderId?: string;
   name: string;
   email: string;
 } & (
@@ -35,7 +36,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
   }
 
-  const { shootId, name, email } = body;
+  const { shootId, folderId, name, email } = body;
+  const supabase = createServiceClient();
+  let validFolderId: string | null = null;
+  if (folderId) {
+    const { data: folder } = await supabase.from("gallery_folders").select("id").eq("id", folderId).eq("shoot_id", shootId).eq("is_active", true).maybeSingle();
+    if (!folder) return NextResponse.json({ error: "This gallery link is no longer active" }, { status: 400 });
+    validFolderId = folder.id;
+  }
 
   let assignments: Assignment[];
   let priceCents: number;
@@ -76,18 +84,14 @@ export async function POST(req: Request) {
       .join(", ")}`;
   }
 
-  const supabase = createServiceClient();
-
   // Confirm every assigned photo actually belongs to this shoot — never
   // trust photo ids from the client body without checking.
-  const { data: photosData } = await supabase
-    .from("photos")
-    .select("id")
-    .eq("shoot_id", shootId)
-    .in(
-      "id",
-      assignments.map((a) => a.photoId)
-    );
+  let photoQuery = supabase.from("photos").select("id").eq("shoot_id", shootId).in(
+    "id",
+    assignments.map((a) => a.photoId)
+  );
+  if (validFolderId) photoQuery = photoQuery.eq("folder_id", validFolderId);
+  const { data: photosData } = await photoQuery;
   const validPhotoIds = new Set(((photosData ?? []) as Pick<Photo, "id">[]).map((p) => p.id));
   if (!assignments.every((a) => validPhotoIds.has(a.photoId))) {
     return NextResponse.json({ error: "One of the selected photos is invalid" }, { status: 400 });
@@ -156,6 +160,7 @@ export async function POST(req: Request) {
     .from("gallery_orders")
     .insert({
       shoot_id: shootId,
+      folder_id: validFolderId,
       client_id: client.id,
       package_id: body.mode === "package" ? body.packageId : "custom",
       total_cents: priceCents,
