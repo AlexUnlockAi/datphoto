@@ -34,9 +34,11 @@ function matchStudentByFilename(filename: string, students: Student[]): Student 
 
 export function GalleryUploadClient({
   shootId,
+  folderId,
   students,
 }: {
   shootId: string;
+  folderId?: string;
   students: Student[];
 }) {
   const router = useRouter();
@@ -62,6 +64,7 @@ export function GalleryUploadClient({
     const formData = new FormData();
     formData.append("file", row.file);
     formData.append("shootId", shootId);
+    if (folderId) formData.append("folderId", folderId);
     if (row.studentId !== UNASSIGNED) formData.append("studentId", row.studentId);
 
     try {

@@ -130,9 +130,20 @@ export type QuoteItem = {
   sort_order: number;
 };
 
+export type GalleryFolder = {
+  id: string;
+  shoot_id: string;
+  name: string;
+  client_label: string | null;
+  public_token: string;
+  is_active: boolean;
+  created_at: string;
+};
+
 export type Photo = {
   id: string;
   shoot_id: string;
+  folder_id: string | null;
   student_id: string | null;
   original_path: string;
   preview_path: string;
@@ -146,6 +157,7 @@ export type GalleryOrderStatus = "pending" | "paid";
 export type GalleryOrder = {
   id: string;
   shoot_id: string;
+  folder_id: string | null;
   client_id: string | null;
   package_id: string;
   total_cents: number;

@@ -23,6 +23,7 @@ export async function POST(req: Request) {
   const file = formData.get("file");
   const shootId = formData.get("shootId");
   const studentId = formData.get("studentId");
+  const folderId = formData.get("folderId");
 
   if (!(file instanceof File) || typeof shootId !== "string" || !shootId) {
     return NextResponse.json({ error: "Missing file or shootId" }, { status: 400 });
@@ -59,10 +60,23 @@ export async function POST(req: Request) {
     );
   }
 
+  let validFolderId: string | null = null;
+  if (typeof folderId === "string" && folderId) {
+    const { data: folder } = await supabase
+      .from("gallery_folders")
+      .select("id")
+      .eq("id", folderId)
+      .eq("shoot_id", shootId)
+      .maybeSingle();
+    if (!folder) return NextResponse.json({ error: "Invalid gallery folder" }, { status: 400 });
+    validFolderId = folder.id;
+  }
+
   const { data: photo, error } = await supabase
     .from("photos")
     .insert({
       shoot_id: shootId,
+      folder_id: validFolderId,
       student_id: typeof studentId === "string" && studentId ? studentId : null,
       original_path: originalPath,
       preview_path: previewPath,

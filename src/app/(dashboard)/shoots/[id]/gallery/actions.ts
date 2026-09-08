@@ -1,8 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { randomBytes } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import type { Photo } from "@/lib/types";
+
+export async function createGalleryFolder(shootId: string, name: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data: shoot } = await supabase.from("shoots").select("id").eq("id", shootId).maybeSingle();
+  if (!shoot) return { error: "Shoot not found." };
+  const { error } = await supabase.from("gallery_folders").insert({
+    shoot_id: shootId,
+    name: name.trim(),
+    public_token: randomBytes(18).toString("base64url"),
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/shoots/${shootId}/gallery`);
+  return {};
+}
 
 export async function deletePhoto(photoId: string): Promise<{ error?: string }> {
   const supabase = await createClient();

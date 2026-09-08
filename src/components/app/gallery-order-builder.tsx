@@ -31,9 +31,11 @@ type PickerTarget =
 
 export function GalleryOrderBuilder({
   shootId,
+  folderId,
   photos,
 }: {
   shootId: string;
+  folderId?: string;
   photos: GalleryPhoto[];
 }) {
   const router = useRouter();
@@ -88,6 +90,7 @@ export function GalleryOrderBuilder({
         tab === "package"
           ? {
               shootId,
+              ...(folderId ? { folderId } : {}),
               name,
               email,
               mode: "package" as const,
@@ -100,6 +103,7 @@ export function GalleryOrderBuilder({
             }
           : {
               shootId,
+              ...(folderId ? { folderId } : {}),
               name,
               email,
               mode: "custom" as const,
